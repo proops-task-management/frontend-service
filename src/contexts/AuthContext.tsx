@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer, useCallback, ReactNode } from 'react'
+import toast from 'react-hot-toast'
 
 const TOKEN_KEY = 'auth_token'
 const USER_KEY = 'auth_user'
@@ -97,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
     dispatch({ type: 'LOGOUT' })
+    toast.success('You have been signed out.')
   }, [])
 
   return (

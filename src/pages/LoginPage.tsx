@@ -1,29 +1,28 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { useAuth } from '../contexts/AuthContext'
-import { useToast } from '../contexts/ToastContext'
 import { login } from '../api/auth'
 import { getApiErrorMessage } from '../api/errorMessage'
 
 export default function LoginPage() {
   const { login: authLogin } = useAuth()
-  const { showToast } = useToast()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault()
     setLoading(true)
     try {
       const data = await login({ email, password })
       authLogin(data.token, data.user)
-      showToast(`Signed in as ${data.user.role}.`, 'success')
+      toast.success(`Signed in as ${data.user.role}.`)
       navigate('/tasks')
     } catch (error) {
-      showToast(getApiErrorMessage(error, 'Invalid email or password.'), 'error')
+      toast.error(getApiErrorMessage(error, 'Invalid email or password.'))
     } finally {
       setLoading(false)
     }
@@ -44,7 +43,7 @@ export default function LoginPage() {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(event) => setEmail(event.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -58,7 +57,7 @@ export default function LoginPage() {
               type="password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -68,7 +67,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 

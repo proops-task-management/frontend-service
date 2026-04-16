@@ -1,21 +1,24 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { useAuth } from '../contexts/AuthContext'
-import { useToast } from '../contexts/ToastContext'
 import { getApiErrorMessage } from '../api/errorMessage'
 import { getTasks, Task } from '../api/tasks'
 import TaskCard from '../components/TaskCard'
 import CreateTaskModal from '../components/CreateTaskModal'
+import NotificationBell from '../components/NotificationBell'
 
 export default function TaskListPage() {
   const { logout, user } = useAuth()
-  const { showToast } = useToast()
   const navigate = useNavigate()
 
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const isLead = user?.role === 'lead'
 
   async function fetchTasks() {
     setLoading(true)
@@ -26,7 +29,7 @@ export default function TaskListPage() {
     } catch (error) {
       const message = getApiErrorMessage(error, 'Failed to load tasks.')
       setError(message)
-      showToast(message, 'error')
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -43,27 +46,40 @@ export default function TaskListPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">ProOps2026</h1>
-          <button
-            onClick={logout}
-            className="text-sm text-gray-500 hover:text-gray-800"
-          >
-            Sign out
-          </button>
+      <header className="border-b border-gray-200 bg-white">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">ProOps2026</h1>
+            {user && (
+              <p className="text-sm text-gray-500">
+                {user.email} - <span className="font-medium text-gray-700">{user.role}</span>
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            {isLead && (
+              <Link
+                to="/users"
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Manage users
+              </Link>
+            )}
+            <button onClick={() => setShowLogoutConfirm(true)} className="text-sm text-gray-500 hover:text-gray-800">
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+      <main className="mx-auto max-w-5xl px-4 py-8">
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-800">Tasks</h2>
-            {user && (
-              <p className="text-sm text-gray-500">
-                Signed in as <span className="font-medium text-gray-700">{user.role}</span>
-              </p>
-            )}
+            <p className="text-sm text-gray-500">
+              Members only see related tasks. Leads can manage all tasks and users.
+            </p>
           </div>
           <button
             onClick={() => setShowCreate(true)}
@@ -73,12 +89,10 @@ export default function TaskListPage() {
           </button>
         </div>
 
-        {loading && (
-          <p className="text-sm text-gray-500">Loading…</p>
-        )}
+        {loading && <p className="text-sm text-gray-500">Loading...</p>}
 
         {error && (
-          <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -89,21 +103,24 @@ export default function TaskListPage() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onClick={() => navigate(`/tasks/${task.id}`)}
-            />
+            <TaskCard key={task.id} task={task} onClick={() => navigate(`/tasks/${task.id}`)} />
           ))}
         </div>
       </main>
 
-      {showCreate && (
-        <CreateTaskModal
-          onCreated={handleTaskCreated}
-          onClose={() => setShowCreate(false)}
-        />
-      )}
+      {showCreate && <CreateTaskModal onCreated={handleTaskCreated} onClose={() => setShowCreate(false)} />}
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        title="Sign out now?"
+        message="You will need to sign in again to continue working."
+        confirmLabel="Sign out"
+        cancelLabel="Stay here"
+        onCancel={() => setShowLogoutConfirm(false)}
+        onConfirm={() => {
+          setShowLogoutConfirm(false)
+          logout()
+        }}
+      />
     </div>
   )
 }

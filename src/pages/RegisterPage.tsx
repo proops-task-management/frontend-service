@@ -1,26 +1,25 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { register } from '../api/auth'
 import { getApiErrorMessage } from '../api/errorMessage'
-import { useToast } from '../contexts/ToastContext'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { showToast } = useToast()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault()
     setLoading(true)
     try {
       await register({ email, password })
-      showToast('Account created successfully.', 'success')
+      toast.success('Account created successfully.')
       navigate('/login')
     } catch (error) {
-      showToast(getApiErrorMessage(error, 'Registration failed. Please try again.'), 'error')
+      toast.error(getApiErrorMessage(error, 'Registration failed. Please try again.'))
     } finally {
       setLoading(false)
     }
@@ -41,7 +40,7 @@ export default function RegisterPage() {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(event) => setEmail(event.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -56,7 +55,7 @@ export default function RegisterPage() {
               required
               minLength={8}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -66,7 +65,7 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {loading ? 'Creating account…' : 'Register'}
+            {loading ? 'Creating account...' : 'Register'}
           </button>
         </form>
 

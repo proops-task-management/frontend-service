@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { emitToast } from '../lib/toastBus'
+import toast from 'react-hot-toast'
 
 const TOKEN_KEY = 'auth_token'
 const USER_KEY = 'auth_user'
@@ -22,7 +22,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(USER_KEY)
-      emitToast('Your session has expired. Please sign in again.', 'error')
+      toast.error('Your session has expired. Please sign in again.')
       window.location.href = '/login'
     }
     return Promise.reject(error)

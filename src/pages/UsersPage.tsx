@@ -1,9 +1,13 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { UserRole } from '../api/auth'
 import { getApiErrorMessage } from '../api/errorMessage'
 import { createManagedUser, deleteUser, getUsers, updateUser, UserSummary } from '../api/users'
-import { useToast } from '../contexts/ToastContext'
+import { useAuth } from '../contexts/AuthContext'
+import NotificationBell from '../components/NotificationBell'
+import ConfirmDialog from '../components/ConfirmDialog'
+import { formatDateTime } from '../lib/datetime'
 
 interface UserDraft {
   email: string
@@ -20,7 +24,7 @@ function buildDraft(user: UserSummary): UserDraft {
 }
 
 export default function UsersPage() {
-  const { showToast } = useToast()
+  const { logout } = useAuth()
   const [users, setUsers] = useState<UserSummary[]>([])
   const [drafts, setDrafts] = useState<Record<string, UserDraft>>({})
   const [loading, setLoading] = useState(true)
@@ -28,6 +32,7 @@ export default function UsersPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [createForm, setCreateForm] = useState<UserDraft>({
     email: '',
     password: '',
@@ -45,14 +50,14 @@ export default function UsersPage() {
       } catch (error) {
         const message = getApiErrorMessage(error, 'Failed to load users.')
         setError(message)
-        showToast(message, 'error')
+        toast.error(message)
       } finally {
         setLoading(false)
       }
     }
 
     loadUsers()
-  }, [showToast])
+  }, [])
 
   function updateDraft(userId: string, changes: Partial<UserDraft>) {
     setDrafts((prev) => ({
@@ -76,9 +81,9 @@ export default function UsersPage() {
       setUsers((prev) => [created, ...prev])
       setDrafts((prev) => ({ ...prev, [created.id]: buildDraft(created) }))
       setCreateForm({ email: '', password: '', role: 'member' })
-      showToast('User created successfully.', 'success')
+      toast.success('User created successfully.')
     } catch (error) {
-      showToast(getApiErrorMessage(error, 'Failed to create user.'), 'error')
+      toast.error(getApiErrorMessage(error, 'Failed to create user.'))
     } finally {
       setCreating(false)
     }
@@ -101,9 +106,9 @@ export default function UsersPage() {
       const updated = await updateUser(user.id, payload)
       setUsers((prev) => prev.map((item) => (item.id === user.id ? updated : item)))
       setDrafts((prev) => ({ ...prev, [user.id]: buildDraft(updated) }))
-      showToast('User updated successfully.', 'success')
+      toast.success('User updated successfully.')
     } catch (error) {
-      showToast(getApiErrorMessage(error, 'Failed to update user.'), 'error')
+      toast.error(getApiErrorMessage(error, 'Failed to update user.'))
     } finally {
       setSavingId(null)
     }
@@ -123,9 +128,9 @@ export default function UsersPage() {
         delete next[user.id]
         return next
       })
-      showToast('User deleted.', 'success')
+      toast.success('User deleted.')
     } catch (error) {
-      showToast(getApiErrorMessage(error, 'Failed to delete user.'), 'error')
+      toast.error(getApiErrorMessage(error, 'Failed to delete user.'))
     } finally {
       setDeletingId(null)
     }
@@ -139,9 +144,15 @@ export default function UsersPage() {
             <h1 className="text-xl font-bold text-gray-900">User management</h1>
             <p className="text-sm text-gray-500">Only leads can create, edit, and delete users.</p>
           </div>
-          <Link to="/tasks" className="text-sm text-gray-500 hover:text-gray-800">
-            Back to tasks
-          </Link>
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <button onClick={() => setShowLogoutConfirm(true)} className="text-sm text-gray-500 hover:text-gray-800">
+              Sign out
+            </button>
+            <Link to="/tasks" className="text-sm text-gray-500 hover:text-gray-800">
+              Back to tasks
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -207,9 +218,7 @@ export default function UsersPage() {
             </div>
           )}
 
-          {!loading && !error && users.length === 0 && (
-            <p className="text-sm text-gray-500">No users found.</p>
-          )}
+          {!loading && !error && users.length === 0 && <p className="text-sm text-gray-500">No users found.</p>}
 
           <div className="space-y-4">
             {users.map((user) => {
@@ -219,9 +228,7 @@ export default function UsersPage() {
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-semibold text-gray-900">{user.email}</h3>
-                      <p className="text-xs text-gray-500">
-                        {user.id} · Created {new Date(user.created_at).toLocaleString()}
-                      </p>
+                      <p className="text-xs text-gray-500">{user.id} - Created {formatDateTime(user.created_at)}</p>
                     </div>
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
                       {user.role}
@@ -276,6 +283,18 @@ export default function UsersPage() {
           </div>
         </section>
       </main>
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        title="Sign out now?"
+        message="You will need to sign in again to manage users later."
+        confirmLabel="Sign out"
+        cancelLabel="Stay here"
+        onCancel={() => setShowLogoutConfirm(false)}
+        onConfirm={() => {
+          setShowLogoutConfirm(false)
+          logout()
+        }}
+      />
     </div>
   )
 }
