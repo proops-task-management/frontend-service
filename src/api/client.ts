@@ -5,7 +5,7 @@ const TOKEN_KEY = 'auth_token'
 const USER_KEY = 'auth_user'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
+  baseURL: '',
 })
 
 apiClient.interceptors.request.use((config) => {
