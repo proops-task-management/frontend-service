@@ -112,6 +112,7 @@ export default function TaskDetailPage() {
       const updated = await updateTaskStatus(id, { status })
       setTask(updated)
       toast.success('Task status updated.')
+      window.setTimeout(() => requestNotificationsRefresh(), 1500)
     } catch (error) {
       const message = getApiErrorMessage(error, 'Failed to update status.')
       setError(message)
@@ -131,7 +132,7 @@ export default function TaskDetailPage() {
       setComments((prev) => [...prev, comment])
       setCommentContent('')
       toast.success('Comment added.')
-      window.setTimeout(() => requestNotificationsRefresh(), 800)
+      window.setTimeout(() => requestNotificationsRefresh(), 1500)
     } catch (error) {
       const message = getApiErrorMessage(error, 'Failed to add comment.')
       setError(message)

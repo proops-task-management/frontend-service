@@ -36,8 +36,8 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 }
 
 function loadInitialState(): AuthState {
-  const token = localStorage.getItem(TOKEN_KEY)
-  const storedUser = localStorage.getItem(USER_KEY)
+  const token = sessionStorage.getItem(TOKEN_KEY)
+  const storedUser = sessionStorage.getItem(USER_KEY)
 
   if (!token) {
     return { token: null, user: null }
@@ -47,7 +47,7 @@ function loadInitialState(): AuthState {
     try {
       return { token, user: JSON.parse(storedUser) as AuthUser }
     } catch {
-      localStorage.removeItem(USER_KEY)
+      sessionStorage.removeItem(USER_KEY)
     }
   }
 
@@ -89,14 +89,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, undefined, loadInitialState)
 
   const login = useCallback((token: string, user: AuthUser) => {
-    localStorage.setItem(TOKEN_KEY, token)
-    localStorage.setItem(USER_KEY, JSON.stringify(user))
+    sessionStorage.setItem(TOKEN_KEY, token)
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user))
     dispatch({ type: 'LOGIN', token, user })
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
+    sessionStorage.removeItem(TOKEN_KEY)
+    sessionStorage.removeItem(USER_KEY)
     dispatch({ type: 'LOGOUT' })
     toast.success('You have been signed out.')
   }, [])

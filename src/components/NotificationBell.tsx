@@ -5,6 +5,7 @@ import {
   getNotifications,
   markNotificationRead,
   NotificationItem,
+  NOTIFICATIONS_BROADCAST_CHANNEL,
   NOTIFICATIONS_REFRESH_EVENT,
 } from '../api/notifications'
 import { formatDateTime } from '../lib/datetime'
@@ -52,10 +53,19 @@ export default function NotificationBell() {
     window.addEventListener(NOTIFICATIONS_REFRESH_EVENT, handleRefreshRequest)
     window.addEventListener('focus', handleWindowFocus)
 
+    let broadcastChannel: BroadcastChannel | null = null
+    try {
+      broadcastChannel = new BroadcastChannel(NOTIFICATIONS_BROADCAST_CHANNEL)
+      broadcastChannel.onmessage = () => loadNotifications()
+    } catch {
+      // BroadcastChannel not supported in this environment
+    }
+
     return () => {
       window.clearInterval(intervalId)
       window.removeEventListener(NOTIFICATIONS_REFRESH_EVENT, handleRefreshRequest)
       window.removeEventListener('focus', handleWindowFocus)
+      broadcastChannel?.close()
     }
   }, [])
 
