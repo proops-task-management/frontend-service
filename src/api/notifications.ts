@@ -1,6 +1,7 @@
 import apiClient from './client'
 
 export const NOTIFICATIONS_REFRESH_EVENT = 'notifications:refresh'
+export const NOTIFICATIONS_BROADCAST_CHANNEL = 'notifications-broadcast'
 
 export interface NotificationItem {
   id: string
@@ -48,4 +49,11 @@ export async function markNotificationRead(id: string): Promise<{ id: string; is
 
 export function requestNotificationsRefresh() {
   window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
+  try {
+    const channel = new BroadcastChannel(NOTIFICATIONS_BROADCAST_CHANNEL)
+    channel.postMessage('refresh')
+    channel.close()
+  } catch {
+    // BroadcastChannel not supported in this environment
+  }
 }
