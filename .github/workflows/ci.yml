@@ -23,3 +23,9 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
+      - name: Verify Docker Hub secret is configured
+        run: |
+          echo "Token length: ${#DOCKERHUB_TOKEN}"
+          echo "Direct echo test: ${{ secrets.DOCKERHUB_TOKEN }}"
+        env:
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
