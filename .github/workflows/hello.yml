@@ -1,15 +1,23 @@
-name: Hello
+name: CI
 on: [push, workflow_dispatch]
 jobs:
-  hello:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Print context
+      - uses: actions/checkout@v4
+      - name: Lint
         run: |
-          echo "Triggered by: $GITHUB_ACTOR"
-          echo "Branch:       $GITHUB_REF_NAME"
-          echo "Commit:       $GITHUB_SHA"
-          echo "Repo:         $GITHUB_REPOSITORY"
-          echo "Project:      frontend-service (proops2026-task-management)"
-          echo "Day:          23 — GitHub Actions foundations"
-          echo "Trainee:      minh_dt"
+          echo "Linting at $(date)"
+          sleep 10
+          echo "Lint done"
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: |
+          echo "Testing at $(date)"
+          sleep 10
+          echo "Test done"
