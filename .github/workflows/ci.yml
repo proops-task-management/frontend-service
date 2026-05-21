@@ -23,3 +23,13 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
+
+  verify-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check secret loaded + masked in logs
+        env:
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "Secret length: ${#DOCKERHUB_TOKEN}"
+          echo "Secret value (should be masked): $DOCKERHUB_TOKEN"
