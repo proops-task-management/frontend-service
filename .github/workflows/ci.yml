@@ -14,7 +14,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: lint
+    # Day 24 change: removed `needs: lint` so build runs in parallel with lint.
+    # Day 23 had needs: lint (sequential). build-image (added in Q3) will gate on both.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
