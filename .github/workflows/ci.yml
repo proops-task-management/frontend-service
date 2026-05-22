@@ -1,5 +1,13 @@
 name: CI
 on: [push, pull_request, workflow_dispatch]
+
+# Day 24: GITHUB_TOKEN needs `packages: write` so build-image can push to GHCR.
+# Repo-level UI toggle (Settings → Actions → Workflow permissions = Read and write)
+# must also be ON — both layers must agree per defense-in-depth design.
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -24,6 +32,33 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
+
+  build-image:
+    runs-on: ubuntu-latest
+    needs: [lint, build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        # QEMU emulator required for multi-arch builds on ubuntu-latest (amd64 host).
+        # Without it, building linux/arm64 from amd64 runner fails with `exec format error`.
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          # Multi-arch per CLAUDE.md: M1 host needs arm64 image to run locally;
+          # kind on ubuntu-latest runner needs amd64. Same digest covers both.
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   verify-secret:
     runs-on: ubuntu-latest
