@@ -1,5 +1,14 @@
 name: CI
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [main]      # only after merge to main (populates SonarCloud main dashboard)
+  pull_request:           # feature branches run here -> no duplicate with push
+  workflow_dispatch:      # manual trigger
+
+concurrency:
+  # A newer push to the same ref cancels the in-flight run instead of stacking.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # Day 24: GITHUB_TOKEN needs `packages: write` so build-image can push to GHCR.
 # Repo-level UI toggle (Settings → Actions → Workflow permissions = Read and write)
