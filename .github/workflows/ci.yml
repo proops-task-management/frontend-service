@@ -1,5 +1,14 @@
 name: CI
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [main]      # only after merge to main (populates SonarCloud main dashboard)
+  pull_request:           # feature branches run here -> no duplicate with push
+  workflow_dispatch:      # manual trigger
+
+concurrency:
+  # A newer push to the same ref cancels the in-flight run instead of stacking.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # Day 24: GITHUB_TOKEN needs `packages: write` so build-image can push to GHCR.
 # Repo-level UI toggle (Settings → Actions → Workflow permissions = Read and write)
@@ -19,6 +28,23 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    # Day 26: runs in parallel with lint/build. Produces the coverage report
+    # that the `sonar` job consumes — sonar gates on this via `needs: [test]`.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test          # vitest run --coverage -> coverage/lcov.info
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
 
   build:
     runs-on: ubuntu-latest
@@ -126,12 +152,25 @@ jobs:
             kubectl logs "$pod" --tail=80 --all-containers=true --previous 2>/dev/null || true
           done
 
-  verify-secret:
+  sonar:
     runs-on: ubuntu-latest
+    needs: [test]
     steps:
-      - name: Check secret loaded + masked in logs
+      - uses: actions/checkout@v4
+        with:
+          # Full history so SonarCloud can diff against the base branch and
+          # compute "new code". Default depth-1 silently breaks new-code detection.
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          # The coverage report the `test` job uploaded. Without this,
+          # SonarCloud reports 0% coverage even though tests produced it.
+          name: coverage
+          path: coverage/
+      - name: SonarCloud Scan
+        # Current maintained action (replaces deprecated sonarcloud-github-action).
+        # Reads sonar-project.properties from the repo root automatically.
+        uses: SonarSource/sonarqube-scan-action@v4
         env:
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          echo "Secret length: ${#DOCKERHUB_TOKEN}"
-          echo "Secret value (should be masked): $DOCKERHUB_TOKEN"
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
