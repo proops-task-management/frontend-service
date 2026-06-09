@@ -1,0 +1,26 @@
+name: IaC Manual Trigger
+# Thin caller: manual run from Actions UI → choose action + environment.
+# The workflow_dispatch inputs render as dropdowns in the GitHub UI.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        options: [plan, apply, destroy]
+        default: plan
+      environment:
+        type: choice
+        options: [dev, test, prod]
+        default: dev
+
+jobs:
+  iac:
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-iac.yml@v1
+    with:
+      action: ${{ inputs.action }}
+      environment: ${{ inputs.environment }}
+      working-directory: iac/${{ inputs.environment }}
+      aws-region: ap-southeast-1
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
