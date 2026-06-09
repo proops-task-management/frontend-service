@@ -1,0 +1,9 @@
+# Terraform artifacts — never commit state, plans, or provider binaries
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+*.tfvars.local
+.terraform.lock.hcl
