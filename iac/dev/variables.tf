@@ -21,3 +21,5 @@ variable "email" {
   type        = string
   default     = "dtminh1611@gmail.com"
 }
+
+# Path-routing demo marker — safe to delete.
