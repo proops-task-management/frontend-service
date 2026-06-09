@@ -1,0 +1,20 @@
+name: PR Merged — App CI + Push
+# Thin caller: push to main (PR merged) → delegate to the platform's reusable workflow.
+# push-image:true → build + test + push multi-arch image to GHCR (tagged with commit SHA).
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'iac/**'
+      - '**/Jenkinsfile'
+
+jobs:
+  app-ci:
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-app-ci.yml@v1
+    with:
+      runtime-version: "20"
+      image-tag: ${{ github.sha }}
+      push-image: true
+    # Secrets omitted on purpose: GHCR uses the auto GITHUB_TOKEN + github.actor
+    # via the reusable workflow's fallback defaults. Add a secrets: block only
+    # when pushing to a non-GHCR registry (Docker Hub, etc.).
