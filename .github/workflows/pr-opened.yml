@@ -1,0 +1,18 @@
+name: PR Open — App CI
+# Thin caller: app PR opened → delegate to the platform's reusable workflow.
+# push-image:false → build + test only (validation), no registry push on PRs.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+    paths-ignore:
+      - 'iac/**'
+      - '**/Jenkinsfile'
+
+jobs:
+  app-ci:
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-app-ci.yml@v1
+    with:
+      runtime-version: "20"
+      image-tag: ${{ github.sha }}
+      push-image: false
