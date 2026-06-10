@@ -1,0 +1,24 @@
+name: Deploy Staging (manual)
+
+# Manual promotion gate. The "Run workflow" click + pasting the SHA IS the approval
+# (GitHub Free private repos can't use Environment required-reviewers). Promotes an
+# already-built image — never rebuilds. Copy the SHA from a recent "Merge → Build +
+# Deploy Dev" run summary.
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: "Commit SHA to promote to staging (copy from a recent build run summary)"
+        type: string
+        required: true
+
+jobs:
+  deploy:
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-deploy.yml@v3
+    with:
+      image-tag: ${{ inputs.image-tag }}
+      environment: staging
+      project-name: "proops-task-management"
+      service-name: "frontend-service"
+    secrets:
+      KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
