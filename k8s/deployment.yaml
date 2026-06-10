@@ -18,7 +18,7 @@ spec:
         - name: ghcr-creds
       containers:
         - name: frontend-service
-          image: ghcr.io/proops2026-task-management/frontend-service:placeholder
+          image: ghcr.io/proops-task-management/frontend-service:placeholder
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

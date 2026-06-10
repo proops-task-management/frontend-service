@@ -1,6 +1,12 @@
-name: PR Merged — App CI + Push
-# Thin caller: push to main (PR merged) → delegate to the platform's reusable workflow.
-# push-image:true → build + test + push multi-arch image to GHCR (tagged with commit SHA).
+name: Merge → Build + Deploy Dev
+
+# Thin caller (build once, auto-deploy dev). Push to main →
+#   job 1 build:       reusable-build.yml builds + pushes a ghcr image tagged by
+#                      the commit SHA, runs the SonarCloud main-branch gate, and
+#                      outputs that SHA as image-tag.
+#   job 2 deploy-dev:  needs build, promotes needs.build.outputs.image-tag to dev.
+# Staging and prod are promoted MANUALLY (deploy-staging.yml / deploy-prod.yml)
+# using the SHA printed in this run's summary — that manual click is the gate.
 on:
   push:
     branches: [main]
@@ -9,14 +15,25 @@ on:
       - '**/Jenkinsfile'
 
 jobs:
-  app-ci:
-    uses: proops-task-management/cicd-platform/.github/workflows/reusable-app-ci.yml@v2
+  build:
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-build.yml@v3
     with:
       runtime-version: "20"
-      image-tag: ${{ github.sha }}
-      push-image: true
+      project-name: "proops-task-management"
+      service-name: "frontend-service"
       enable-sonar: true
     secrets:
-      # GHCR still uses the auto GITHUB_TOKEN + github.actor via fallback defaults.
-      # SONAR_TOKEN is forwarded for the sonar job's quality gate.
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  deploy-dev:
+    needs: build
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-deploy.yml@v3
+    with:
+      # Reads the SHA the build job exported (the output→input handoff).
+      image-tag: ${{ needs.build.outputs.image-tag }}
+      environment: dev
+      project-name: "proops-task-management"
+      service-name: "frontend-service"
+    secrets:
+      # Optional for kind-in-CI; passing it demonstrates env-scoped secret wiring.
+      KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
