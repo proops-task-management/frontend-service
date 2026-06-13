@@ -1,3 +1,4 @@
+// Day 30 integration trace — pipeline walk-through marker (PR → CI → GHCR → dev → staging → prod)
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
