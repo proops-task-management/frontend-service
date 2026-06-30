@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    uses: proops-task-management/cicd-platform/.github/workflows/reusable-build.yml@v3
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-build.yml@v4
     with:
       runtime-version: "20"
       project-name: "proops-task-management"
