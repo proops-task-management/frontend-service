@@ -6,6 +6,9 @@ data "aws_caller_identity" "current" {}
 resource "aws_s3_bucket" "demo" {
   bucket = "proops-taskmgmt-${var.environment}-s3-apse1-demo-${data.aws_caller_identity.current.account_id}"
   # Owner/Email/Project/Environment tags come from provider default_tags.
+  tags = {
+    CostCenter = "day36-demo" # Day 36 Agent C test — benign change (safe plan, expect OK)
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "demo" {
