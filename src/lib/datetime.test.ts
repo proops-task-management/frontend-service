@@ -7,7 +7,7 @@ describe('formatDate', () => {
     expect(formatDate(undefined)).toBe('')
   })
 
-  it.fails('formats a date-only string in the given locale', () => {
+  it('formats a date-only string in the given locale', () => {
     // Date-only is parsed in local time, so the output is timezone-stable.
     expect(formatDate('2024-01-15', 'en-US')).toBe('01/15/2024')
   })
@@ -24,7 +24,7 @@ describe('formatDateTime', () => {
     expect(formatDateTime('')).toBe('Just now')
   })
 
-  it.fails('formats a date-only string with a time component', () => {
+  it('formats a date-only string with a time component', () => {
     // Note: en-US hour12:false renders local midnight as "24:00:00" (ICU quirk),
     // so assert on the date + a HH:MM:SS shape rather than the exact midnight string.
     const result = formatDateTime('2024-01-15', 'en-US')
