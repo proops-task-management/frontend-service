@@ -6,7 +6,7 @@ function parseApiDate(value: string): Date {
   const dateOnlyMatch = value.match(DATE_ONLY_PATTERN)
   if (dateOnlyMatch) {
     const [, year, month, day] = dateOnlyMatch
-    return new Date(Number(year), Number(month) - 1, Number(day) + 1)
+    return new Date(Number(year), Number(month) - 1, Number(day))
   }
 
   const dateTimeWithoutZoneMatch = value.match(DATE_TIME_WITHOUT_ZONE_PATTERN)
