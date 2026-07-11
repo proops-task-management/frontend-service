@@ -1,58 +1,17 @@
-name: Why Failed — Agent B trigger
-# Day 36 fleet · Agent B (CI Failure Triage).
-# A teammate comments "/why-failed" on a PR → this workflow finds the PR's latest failed
-# run and POSTs it to the fleet's /ci-failed endpoint. The agent reads the logs and posts
-# a diagnosis back as a PR comment. This workflow only notifies — it never triages itself.
-#
-# GOTCHA: issue_comment workflows ALWAYS run from the file on the DEFAULT branch (main),
-# never from the PR branch. So this file must be merged to main before "/why-failed" works.
-#
-# WIRING: set the fleet's public URL as a repo Actions variable (rotates with ngrok):
-#   gh variable set FLEET_URL --repo proops-task-management/frontend-service \
-#     --body "https://<your-ngrok>.ngrok-free.app"
+name: Why Failed — Agent B relay
 
+# Thin caller: a MEMBER/OWNER comments `/why-failed` on a PR -> delegate to the platform's
+# reusable relay (IRD-022 Agent B). It resolves the PR's latest failed run and POSTs it to
+# vars.FLEET_URL/ci-failed. Self-skips until FLEET_URL is a real value (D21/D18).
+# GOTCHA: issue_comment workflows always run from the DEFAULT branch, so this must be on main.
 on:
   issue_comment:
     types: [created]
 
 jobs:
-  notify-fleet:
-    # Only on PR comments that start with /why-failed
-    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/why-failed') }}
-    runs-on: ubuntu-latest
+  why-failed:
+    if: ${{ github.event.issue.pull_request != null && contains(github.event.comment.body, '/why-failed') }}
     permissions:
-      contents: read
-      pull-requests: read
       actions: read
-    steps:
-      - name: Resolve the PR's latest failed run
-        id: run
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR="${{ github.event.issue.number }}"
-          BRANCH=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json headRefName --jq .headRefName)
-          RUN_ID=$(gh run list --repo "$GITHUB_REPOSITORY" --branch "$BRANCH" \
-                     --status failure --limit 1 --json databaseId --jq '.[0].databaseId')
-          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
-          echo "Resolved PR #$PR (branch $BRANCH) → failed run $RUN_ID"
-
-      - name: Notify the fleet (/ci-failed)
-        if: ${{ steps.run.outputs.run_id != '' && steps.run.outputs.run_id != 'null' }}
-        run: |
-          curl -sS -X POST "${{ vars.FLEET_URL }}/ci-failed" \
-            -H 'Content-Type: application/json' \
-            -d "$(jq -nc \
-                  --arg repo "${{ github.repository }}" \
-                  --argjson pr ${{ github.event.issue.number }} \
-                  --arg run "${{ steps.run.outputs.run_id }}" \
-                  --arg who "${{ github.event.comment.user.login }}" \
-                  '{repo:$repo, pr_number:$pr, run_id:$run, commenter:$who}')"
-
-      - name: Comment when no failed run was found
-        if: ${{ steps.run.outputs.run_id == '' || steps.run.outputs.run_id == 'null' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr comment "${{ github.event.issue.number }}" --repo "$GITHUB_REPOSITORY" \
-            --body "🤖 /why-failed: no failed run found for this PR's branch — is CI green, or still running?"
+      pull-requests: write
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-why-failed.yml@v6
