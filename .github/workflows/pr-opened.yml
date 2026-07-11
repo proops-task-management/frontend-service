@@ -1,17 +1,20 @@
 name: PR Open — App CI
-# Thin caller: app PR opened → delegate to the platform's reusable workflow.
-# push-image:false → build + test only (validation), no registry push on PRs.
+
+# Thin caller (<35 lines): frontend PR to main -> the platform's reusable Node CI gate.
+# The job is named `app-ci` so the required check resolves to `app-ci / ci-success`
+# (identical name across all 5 services => one ruleset line covers them all — IRD-015).
+# @v6 Node gate: build + sonar + gitleaks + trivy fs + image build (push:false) + trivy image.
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - 'iac/**'
       - '**/Jenkinsfile'
 
 jobs:
   app-ci:
-    uses: proops-task-management/cicd-platform/.github/workflows/reusable-app-ci.yml@v5
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-node-ci.yml@v6
     with:
       runtime-version: "20"
       image-tag: ${{ github.sha }}

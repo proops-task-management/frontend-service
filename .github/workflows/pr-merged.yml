@@ -1,39 +1,26 @@
-name: Merge → Build + Deploy Dev
+name: Merge -> Build + Bump Dev
 
-# Thin caller (build once, auto-deploy dev). Push to main →
-#   job 1 build:       reusable-build.yml builds + pushes a ghcr image tagged by
-#                      the commit SHA, runs the SonarCloud main-branch gate, and
-#                      outputs that SHA as image-tag.
-#   job 2 deploy-dev:  needs build, promotes needs.build.outputs.image-tag to dev.
-# Staging and prod are promoted MANUALLY (deploy-staging.yml / deploy-prod.yml)
-# using the SHA printed in this run's summary — that manual click is the gate.
+# Thin caller: push to main -> reusable-build (build once, push :sha + :latest to GHCR,
+# trivy-image gate, then bump the deploy repo's dev overlay = GitOps handoff).
+# bump-dev self-skips until DEPLOY_REPO_TOKEN exists (D12), so this is green now.
+# push-deploy (reusable-deploy) was RETIRED at v6 — deploy is Argo CD's job (IRD-015/IRD-017).
 on:
   push:
     branches: [main]
     paths-ignore:
+      - '**.md'
       - 'iac/**'
       - '**/Jenkinsfile'
 
 jobs:
   build:
-    uses: proops-task-management/cicd-platform/.github/workflows/reusable-build.yml@v4
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-build.yml@v6
     with:
-      runtime-version: "20"
       project-name: "proops-task-management"
       service-name: "frontend-service"
+      stack: "node"
+      runtime-version: "20"
       enable-sonar: true
     secrets:
+      DEPLOY_REPO_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  deploy-dev:
-    needs: build
-    uses: proops-task-management/cicd-platform/.github/workflows/reusable-deploy.yml@v3
-    with:
-      # Reads the SHA the build job exported (the output→input handoff).
-      image-tag: ${{ needs.build.outputs.image-tag }}
-      environment: dev
-      project-name: "proops-task-management"
-      service-name: "frontend-service"
-    secrets:
-      # Optional for kind-in-CI; passing it demonstrates env-scoped secret wiring.
-      KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
