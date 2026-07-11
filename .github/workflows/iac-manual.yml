@@ -15,7 +15,7 @@ on:
 
 jobs:
   iac:
-    uses: proops-task-management/cicd-platform/.github/workflows/reusable-iac.yml@v1
+    uses: proops-task-management/cicd-platform/.github/workflows/reusable-iac.yml@v6
     with:
       action: ${{ inputs.action }}
       environment: ${{ inputs.environment }}
