@@ -32,7 +32,7 @@ jobs:
           echo "ref=$REF" >> "$GITHUB_OUTPUT"
 
       - name: Checkout the PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.pr.outputs.ref }}
 
