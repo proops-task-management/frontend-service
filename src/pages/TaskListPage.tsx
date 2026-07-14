@@ -21,11 +21,13 @@ export default function TaskListPage() {
   const isLead = user?.role === 'lead'
 
   async function fetchTasks() {
-    setLoading(true)
-    setError(null)
+    // No synchronous setState here: `loading` starts true and `error` starts null, so the
+    // first state change happens only after the await — keeps react-hooks/set-state-in-effect
+    // satisfied when this runs from the mount effect.
     try {
       const data = await getTasks()
       setTasks(data.tasks)
+      setError(null)
     } catch (error) {
       const message = getApiErrorMessage(error, 'Failed to load tasks.')
       setError(message)
@@ -36,6 +38,7 @@ export default function TaskListPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch in effect; migrate to React Query tracked in MIN-47
     fetchTasks()
   }, [])
 
