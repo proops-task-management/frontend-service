@@ -12,7 +12,10 @@ import { formatDateTime } from '../lib/datetime'
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  // Starts true: a fetch fires on mount. Loading is only surfaced inside the (initially closed)
+  // dropdown, so background polls no longer flip it — removing a synchronous setState from the
+  // mount effect (react-hooks/set-state-in-effect) and the old 5s "Loading…" flicker.
+  const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const containerRef = useRef<HTMLDivElement | null>(null)
 
@@ -22,7 +25,6 @@ export default function NotificationBell() {
   )
 
   async function loadNotifications(showErrors = false) {
-    setLoading(true)
     try {
       const data = await getNotifications()
       setNotifications(data)
@@ -35,6 +37,7 @@ export default function NotificationBell() {
     }
   }
 
+  /* eslint-disable react-hooks/set-state-in-effect -- data fetch in effect; migrate to React Query tracked in MIN-47 */
   useEffect(() => {
     loadNotifications()
 
@@ -68,6 +71,7 @@ export default function NotificationBell() {
       broadcastChannel?.close()
     }
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {

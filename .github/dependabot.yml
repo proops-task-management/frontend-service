@@ -1,5 +1,8 @@
 # Dependabot standard (IRD-015): npm + docker + github-actions, weekly,
 # minor/patch grouped into one PR; majors come individually; security updates always on.
+# npm exception (MIN-39): coupled toolchain ecosystems are grouped across ALL update-types
+# (incl. majors) so a generation bump arrives as ONE peer-consistent PR — a single package
+# dragged forward alone fails `npm ci` with ERESOLVE (the root cause of this ticket).
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -8,6 +11,29 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
     groups:
+      # Coupled majors — one PR per ecosystem (order matters: matched before all-minor-patch).
+      eslint:
+        patterns:
+          - "eslint"
+          - "@eslint/*"
+          - "typescript-eslint"
+          - "eslint-plugin-*"
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "vitest"
+          - "@vitest/*"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
       all-minor-patch:
         update-types: ["minor", "patch"]
 

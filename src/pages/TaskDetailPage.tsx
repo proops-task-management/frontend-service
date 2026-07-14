@@ -29,8 +29,9 @@ export default function TaskDetailPage() {
   const [task, setTask] = useState<Task | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [users, setUsers] = useState<UserSummary[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(Boolean(id))
   const [error, setError] = useState<string | null>(null)
+  const [seededTaskId, setSeededTaskId] = useState<string | null>(null)
   const [commentContent, setCommentContent] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
   const [assigneeId, setAssigneeId] = useState('')
@@ -45,10 +46,14 @@ export default function TaskDetailPage() {
   const isLead = user?.role === 'lead'
   const canUpdateStatus = !!user && !!task && (task.createdBy === user.id || task.assigneeId === user.id)
 
+  /* eslint-disable react-hooks/set-state-in-effect --
+     Data fetch in effect. The rule prefers a data-fetching library (React Query) over
+     fetch-in-effect; adopting one is tracked in MIN-47. Non-fetch set-state-in-effect cases
+     (e.g. the derive-from-prop seeding below) stay enforced. */
   useEffect(() => {
+    // No id → nothing to fetch. `loading` already initialised to false for this case, so the
+    // render falls through to the `!task` branch ("Task not found."); no synchronous setState.
     if (!id) {
-      setError('Task not found.')
-      setLoading(false)
       return
     }
 
@@ -66,17 +71,19 @@ export default function TaskDetailPage() {
       })
       .finally(() => setLoading(false))
   }, [id])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  useEffect(() => {
-    if (!task) {
-      return
-    }
-
+  // Seed the editable form fields when a *different* task loads (react.dev: "Adjusting some
+  // state when a prop changes" — done during render, not in an effect, so it doesn't trip
+  // react-hooks/set-state-in-effect and avoids an extra render pass). Guarding on task.id means
+  // same-task updates (status / metadata saves) don't clobber the user's in-progress edits.
+  if (task && task.id !== seededTaskId) {
+    setSeededTaskId(task.id)
     setAssigneeId(task.assigneeId ?? '')
     setMetadataTitle(task.title)
     setMetadataDescription(task.description ?? '')
     setMetadataDueDate(task.dueDate ?? '')
-  }, [task])
+  }
 
   useEffect(() => {
     if (!isLead) {
