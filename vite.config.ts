@@ -7,8 +7,8 @@ export default defineConfig({
     port: 3000,
   },
   test: {
-    // Pure unit tests run in node; no jsdom needed for the current suite.
-    environment: 'node',
+    // jsdom: component tests (React Testing Library) need a DOM; pure-logic tests run fine here too.
+    environment: 'jsdom',
     coverage: {
       provider: 'v8',
       // text = human-readable in CI logs; lcov = the report SonarCloud reads.
