@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react'
+import { SyntheticEvent, useState } from 'react'
 import toast from 'react-hot-toast'
 import { getApiErrorMessage } from '../api/errorMessage'
 import { createTask, Task } from '../api/tasks'
@@ -8,14 +8,14 @@ interface CreateTaskModalProps {
   onClose: () => void
 }
 
-export default function CreateTaskModal({ onCreated, onClose }: CreateTaskModalProps) {
+export default function CreateTaskModal({ onCreated, onClose }: Readonly<CreateTaskModalProps>) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault()
     setError(null)
     setLoading(true)
@@ -37,18 +37,17 @@ export default function CreateTaskModal({ onCreated, onClose }: CreateTaskModalP
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose()
-        }
-      }}
-    >
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 h-full w-full cursor-default"
+      />
+      <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold text-gray-900">New task</h2>
-          <button onClick={onClose} className="text-lg leading-none text-gray-400 hover:text-gray-600">
+          <button type="button" onClick={onClose} className="text-lg leading-none text-gray-400 hover:text-gray-600">
             x
           </button>
         </div>

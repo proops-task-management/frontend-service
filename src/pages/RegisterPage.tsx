@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react'
+import { useState, SyntheticEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { register } from '../api/auth'
@@ -11,7 +11,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault()
     setLoading(true)
     try {

@@ -69,7 +69,7 @@ export default function TaskListPage() {
                 Manage users
               </Link>
             )}
-            <button onClick={() => setShowLogoutConfirm(true)} className="text-sm text-gray-500 hover:text-gray-800">
+            <button type="button" onClick={() => setShowLogoutConfirm(true)} className="text-sm text-gray-500 hover:text-gray-800">
               Sign out
             </button>
           </div>
@@ -85,6 +85,7 @@ export default function TaskListPage() {
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setShowCreate(true)}
             className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
           >

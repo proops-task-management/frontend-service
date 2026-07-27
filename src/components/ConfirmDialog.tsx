@@ -18,7 +18,7 @@ export default function ConfirmDialog({
   confirmTone = 'default',
   onConfirm,
   onCancel,
-}: ConfirmDialogProps) {
+}: Readonly<ConfirmDialogProps>) {
   if (!open) {
     return null
   }
@@ -29,15 +29,14 @@ export default function ConfirmDialog({
       : 'rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700'
 
   return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/40 px-4"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) {
-          onCancel()
-        }
-      }}
-    >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/40 px-4">
+      <button
+        type="button"
+        aria-label={cancelLabel}
+        onClick={onCancel}
+        className="absolute inset-0 h-full w-full cursor-default"
+      />
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
         <p className="mt-2 text-sm leading-6 text-gray-600">{message}</p>
 

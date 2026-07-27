@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { SyntheticEvent, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../api/errorMessage'
@@ -127,7 +127,7 @@ export default function TaskDetailPage() {
     }
   }
 
-  async function handleAddComment(event: FormEvent) {
+  async function handleAddComment(event: SyntheticEvent) {
     event.preventDefault()
     if (!id || !commentContent.trim()) {
       return
@@ -149,7 +149,7 @@ export default function TaskDetailPage() {
     }
   }
 
-  async function handleAssignTask(event: FormEvent) {
+  async function handleAssignTask(event: SyntheticEvent) {
     event.preventDefault()
     if (!id || !assigneeId) {
       return
@@ -171,7 +171,7 @@ export default function TaskDetailPage() {
     }
   }
 
-  async function handleSaveMetadata(event: FormEvent) {
+  async function handleSaveMetadata(event: SyntheticEvent) {
     event.preventDefault()
     if (!id) {
       return
@@ -221,7 +221,7 @@ export default function TaskDetailPage() {
     return (
       <div className="p-8">
         <p className="text-sm text-red-600">{error ?? 'Task not found.'}</p>
-        <button onClick={() => navigate('/tasks')} className="mt-4 text-sm text-indigo-600 hover:underline">
+        <button type="button" onClick={() => navigate('/tasks')} className="mt-4 text-sm text-indigo-600 hover:underline">
           Back to tasks
         </button>
       </div>
@@ -232,12 +232,12 @@ export default function TaskDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <button onClick={() => navigate('/tasks')} className="text-sm text-gray-500 hover:text-gray-800">
+          <button type="button" onClick={() => navigate('/tasks')} className="text-sm text-gray-500 hover:text-gray-800">
             Back to tasks
           </button>
           <div className="flex items-center gap-3">
             <NotificationBell />
-            <button onClick={() => setShowLogoutConfirm(true)} className="text-sm text-gray-500 hover:text-gray-800">
+            <button type="button" onClick={() => setShowLogoutConfirm(true)} className="text-sm text-gray-500 hover:text-gray-800">
               Sign out
             </button>
             {isLead && (
@@ -286,6 +286,7 @@ export default function TaskDetailPage() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {(['todo', 'in_progress', 'done'] as TaskStatus[]).map((status) => (
                   <button
+                    type="button"
                     key={status}
                     disabled={task.status === status}
                     onClick={() => handleStatusChange(status)}

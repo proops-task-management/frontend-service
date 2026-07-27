@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { UserRole } from '../api/auth'
@@ -69,7 +69,7 @@ export default function UsersPage() {
     }))
   }
 
-  async function handleCreateUser(event: FormEvent) {
+  async function handleCreateUser(event: SyntheticEvent) {
     event.preventDefault()
     setCreating(true)
     try {
@@ -146,7 +146,7 @@ export default function UsersPage() {
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
-            <button onClick={() => setShowLogoutConfirm(true)} className="text-sm text-gray-500 hover:text-gray-800">
+            <button type="button" onClick={() => setShowLogoutConfirm(true)} className="text-sm text-gray-500 hover:text-gray-800">
               Sign out
             </button>
             <Link to="/tasks" className="text-sm text-gray-500 hover:text-gray-800">

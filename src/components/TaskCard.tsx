@@ -6,9 +6,10 @@ interface TaskCardProps {
   onClick: () => void
 }
 
-export default function TaskCard({ task, onClick }: TaskCardProps) {
+export default function TaskCard({ task, onClick }: Readonly<TaskCardProps>) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="w-full rounded-xl border border-gray-100 bg-white p-4 text-left shadow transition-shadow hover:shadow-md"
     >
