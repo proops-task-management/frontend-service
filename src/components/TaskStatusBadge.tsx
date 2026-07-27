@@ -12,7 +12,7 @@ const labels: Record<TaskStatus, string> = {
   done: 'Done',
 }
 
-export default function TaskStatusBadge({ status }: { status: TaskStatus }) {
+export default function TaskStatusBadge({ status }: Readonly<{ status: TaskStatus }>) {
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>
       {labels[status]}

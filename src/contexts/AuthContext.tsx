@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useCallback, ReactNode } from 'react'
+import { createContext, useContext, useReducer, useCallback, useMemo, ReactNode } from 'react'
 import toast from 'react-hot-toast'
 
 const TOKEN_KEY = 'auth_token'
@@ -85,7 +85,7 @@ function decodeUserFromToken(token: string): AuthUser | null {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [state, dispatch] = useReducer(authReducer, undefined, loadInitialState)
 
   const login = useCallback((token: string, user: AuthUser) => {
@@ -101,8 +101,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     toast.success('You have been signed out.')
   }, [])
 
+  const value = useMemo<AuthContextValue>(
+    () => ({ ...state, login, logout }),
+    [state, login, logout],
+  )
+
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

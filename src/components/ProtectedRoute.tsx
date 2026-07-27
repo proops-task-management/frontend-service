@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
   allowedRoles?: string[]
 }
 
-export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, allowedRoles }: Readonly<ProtectedRouteProps>) {
   const { token, user } = useAuth()
   const location = useLocation()
   const isForbidden = !!allowedRoles && (!user || !allowedRoles.includes(user.role))
