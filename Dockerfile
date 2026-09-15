@@ -1,4 +1,6 @@
-FROM node:20-alpine AS builder
+# Node major must match `runtime-version` in .github/workflows/pr-opened.yml + pr-merged.yml
+# (MIN-66) — CI and the Docker builder on different majors is the green-PR / red-merge class.
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci

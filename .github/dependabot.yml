@@ -42,12 +42,14 @@ updates:
     schedule:
       interval: "weekly"
     ignore:
-      # Keep the builder on the Node 20 line (matches the app's runtime-version: "20").
-      # A major Node bump in the builder can break `npm ci` / `npm run build`; the shift-left
-      # image gate would now catch it at PR, but pinning avoids the weekly red PR. Block >=21,
-      # keep 20.x patches. (The nginx runtime is a low-risk static server — not pinned.)
+      # Keep the builder on the Node 24 LTS line — the same major as `runtime-version: "24"` in
+      # pr-opened.yml + pr-merged.yml (MIN-66). Dependabot can bump this Dockerfile but never the
+      # workflow input, so a Dependabot major PR would split CI and Docker onto different majors.
+      # Block >=25, keep 24.x patches. This ignore hides the upgrade signal, so the next LTS move
+      # (all three pins in one PR) is owned by MIN-67 on the board, not by this comment.
+      # (The nginx runtime is a low-risk static server — not pinned.)
       - dependency-name: "node"
-        versions: [">=21"]
+        versions: [">=25"]
     groups:
       all-minor-patch:
         update-types: ["minor", "patch"]

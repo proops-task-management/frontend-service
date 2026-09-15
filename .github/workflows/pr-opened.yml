@@ -15,7 +15,7 @@ jobs:
   app-ci:
     uses: proops-task-management/cicd-platform/.github/workflows/reusable-node-ci.yml@v6
     with:
-      runtime-version: "20"
+      runtime-version: "24"   # same major as the Dockerfile builder (MIN-66)
       image-tag: ${{ github.sha }}
       push-image: false
       enable-sonar: true
