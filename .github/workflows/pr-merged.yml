@@ -18,7 +18,7 @@ jobs:
       project-name: "proops-task-management"
       service-name: "frontend-service"
       stack: "node"
-      runtime-version: "20"
+      runtime-version: "24"   # same major as the Dockerfile builder (MIN-66)
       enable-sonar: true
     secrets:
       DEPLOY_REPO_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
