@@ -5,6 +5,16 @@ name: Merge -> Build + Bump Dev
 # bump-dev self-skips until DEPLOY_REPO_TOKEN exists (D12), so this is green now.
 # push-deploy (reusable-deploy) was RETIRED at v6 — deploy is Argo CD's job (IRD-015/IRD-017).
 on:
+  # Manual re-trigger of the build + GitOps handoff, with no dummy commit.
+  # Added at MIN-72: proving bump-dev end-to-end needed a way to run this
+  # workflow on demand, and the only alternative was a no-op commit crafted to
+  # dodge the paths-ignore filter below — a commit whose whole purpose is to
+  # defeat a filter is worse than the one line that makes it unnecessary.
+  # Safe at any time: the image is keyed on github.sha and bump-dev is
+  # idempotent (commit-if-changed), so a dispatch against an unchanged main
+  # exercises the whole path and writes nothing. Dispatch needs repo write
+  # access, so a fork cannot reach the deploy repo through it.
+  workflow_dispatch:
   push:
     branches: [main]
     paths-ignore:
